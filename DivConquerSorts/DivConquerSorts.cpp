@@ -101,8 +101,6 @@ void PrintReverse(DataType arr[], int len, int lineWords) { // prints the entire
     }
 }
 
-
-
 template <typename DataType>
 void swap(DataType& arg1, DataType& arg2) { // deep copies stuff to keep things simple
     DataType temp = arg1; // backup arg1 before changing it
