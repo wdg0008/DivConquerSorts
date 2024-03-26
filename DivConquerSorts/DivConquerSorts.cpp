@@ -14,19 +14,20 @@ The first print is in order, and the second is reverse.
 It asks for certain parameters to specify what file is read and how much to print per line.
 */
 
-#include <iostream> // for cout and string comparison
-#include <iomanip> // for the prettifying of output
+#include <iostream>  // for cout and string comparison
+#include <iomanip>   // for the prettifying of output
 #include <exception> // for fun error handling
-#include <fstream> // because files
+#include <fstream>   // because files
 #include <exception> // for when things go wrong
-#include <string> // pray that this includes relational operators!
+#include <string>    // pray that this includes relational operators!
 
 const int MAX_LENGTH = 100000; // maximum number of elements in the sorted list;
+const int FIELD_WIDTH = 8; // field width for writing output to file
 
 // declare all the function prototypes
-void PrintArray(std::string[], int, int); // prints the entire array
+void PrintArray(std::string[], int, int, std::ofstream&); // prints the entire array
 
-void PrintReverse(std::string[], int, int); // prints the entire array in reverse
+void PrintReverse(std::string[], int, int, std::ofstream&); // prints the entire array in reverse
 
 void QuickSort(std::string[], int, int); // quicksort algorithm wrapper
 
@@ -77,7 +78,7 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
         words2 = new std::string[MAX_LENGTH]; // copy of values passed to MergeSort
         scratch = new std::string[MAX_LENGTH]; // temporary array to use for sorting algorithms
     } catch (std::bad_alloc) { // in case we run out of memory, this helps pinpoint the issue
-        std::cout << "The memory for the input data failed to allocate\n";
+        std::cout << "The memory for the input data failed to allocate. Terminating program.\n\n";
         return -1;
     }
     int n; // number of words in the input file
@@ -101,11 +102,13 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
     /* PART III: Sort with quicksort */
     QuickSort(words1, 0, n);
     /* PART IV: Print results to output file*/
-    PrintArray(words1, n, wordsPerLine);
+    outFile << n << "words were sorted using quicksort:\n\n";
+    PrintArray(words1, n, wordsPerLine, outFile); // print the sorted results to the file
     /* PART V: Sort with mergesort */
     MergeSort(words2, 0, n, scratch); // mergesort with extra temporary memory
     /* PART VI: Print results in reverse order */
-    PrintReverse(words2, n, wordsPerLine);
+    outFile << n << "words were sorted using mergesort, printed in reverse order:\n\n";
+    PrintReverse(words2, n, wordsPerLine, outFile); // print reverse sorted results to file
     /* PART VII: Clean Up*/
 
     inFile.close();
@@ -125,8 +128,8 @@ void QuickSort(std::string data[], int start, int stop) { // the wrapper functio
 }
 
 int partition(std::string words[], int leftend, int rightend) { // the partitioning does ALL the work
-    std::string p = words[leftend]; // the pivot point to return at the end of all this mess
-    int i = leftend, j = rightend + 1;
+    std::string p = words[leftend]; // the pivot point to start the chaos
+    int i = leftend, j = rightend + 1; // I <3 textbook
     while (i >= j) {
         while (words[i] >= p) {
             ++i;
@@ -138,7 +141,7 @@ int partition(std::string words[], int leftend, int rightend) { // the partition
     }
     swap(words[i], words[j]);
     swap(words[leftend], words[j]);
-    return j;
+    return j; // the new pivot in its proper place
 }
 
 void MergeSort(std::string A[], int left, int right, std::string temp[]) {
@@ -180,22 +183,30 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
     }
 }
 
-void PrintArray(std::string arr[], int len, int lineWords) {
-    // TODO: will need to update this for formatting and words per line
-    for (int c = 0; c < len; c++) {
-        std::cout << arr[c];
+void PrintArray(std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints out the entire array
+    int c; // counter accessible to rest of function
+    for (c = 0; c < len/lineWords; c++) { // repeat for every FULL line
+        for (int i = 0; i < lineWords; i++) {
+            writeFile << std::setw(FIELD_WIDTH) << std::right<< arr[c*lineWords + i] << ',';
+        } // there may still be a few characters in a partial line
     }
+    for (int i = c*lineWords; i < len; i++) { // prints out the last few words that are not a complete line
+        writeFile << std::setw(FIELD_WIDTH) << std::right << arr[len - i] << ',';
+    } // FINISH HIM!!!
+    return;
 }
 
-void PrintReverse(std::string arr[], int len, int lineWords) { // prints the entire array in reverse order
-    // TODO: will need to update this for formatting and words per line
-    if (len == 0)
-        return; // base case for the recursion
-    else {
-        std::cout << arr[len - 1]; // print the last element
-        PrintReverse(arr, (len - 1), lineWords); // recursively call on the array without the element just printed
-        // recusrion makes life easier (except for a compiler)
+void PrintReverse(std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints the entire array in reverse order
+    int c; // counter accessible to the rest of the function
+    for (c = len - 1; len - c*lineWords > 0; c--) { // start on the last line and work down by lines
+        for (int i = lineWords - 1; i >= 0; i--) { // repeat for every FULL line
+            writeFile << std::setw(FIELD_WIDTH) << std::right << arr[c * lineWords + i] << ',';
+        } // watch out for stragglers in partial lines
     }
+    for (int i = len - c * lineWords; len >= 0; i--) { // prints out the last words that do not fill a line
+        writeFile << std::setw(FIELD_WIDTH) << std::right << arr[i] << ',';
+    } // K.O.
+    return;
 }
 
 void swap(std::string& arg1, std::string& arg2) { // deep copies stuff to keep things simple
