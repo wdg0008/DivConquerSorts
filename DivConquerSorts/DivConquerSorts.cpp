@@ -37,8 +37,6 @@ void MergeSort(std::string[], int, int, std::string[]); // mergesort algorithm w
 
 void merge(std::string[], int, int, int, int, std::string[]); // merge back together all of the values
 
-void swap(std::string&, std::string&); // swaps two elements by deep copy
-
 // thus continues the eternal cycle of suffering
 int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
     /* PART I: Get input and output file names */
@@ -120,36 +118,38 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
 }
 
 void QuickSort(std::string data[], int start, int stop) { // the wrapper function for quicksort
-    if (start >= stop)
-        return; // bad call!
-    int partitionIndex = partition(data, start, stop); // find the partition
-    QuickSort(data, start, partitionIndex - 1);
-    QuickSort(data, partitionIndex + 1, stop);
+    if (start < stop) { // the call is valid because there are elements to sort
+        int partitionIndex = partition(data, start, stop); // find the partition
+        QuickSort(data, start, partitionIndex - 1);
+        QuickSort(data, partitionIndex + 1, stop);
+    }
+    return; // skips to here on a bad call, arrives here on a good one
 }
 
 int partition(std::string words[], int leftend, int rightend) { // the partitioning does ALL the work
     std::string p = words[leftend]; // the pivot point to start the chaos
     int i = leftend, j = rightend + 1; // I <3 textbook
     while (i >= j) {
-        while (words[i] >= p) {
-            ++i;
+        while (words[i].compare(p) > 0 || words[i].compare(p) == 0) { // words[i] >= p
+            ++i; // move i to the right from the left (LTR)
         }
-        while (words[j] <= p) {
-            --j;
+        while (words[j].compare(p) < 0 || words[i].compare(p) == 0) { // words[i] <= p
+            --j; // move j to the left from the right (RTL)
         }
-        swap(words[i], words[j]);
+        std::swap(words[i], words[j]);
     }
-    swap(words[i], words[j]);
-    swap(words[leftend], words[j]);
+    std::swap(words[i], words[j]);
+    std::swap(words[leftend], words[j]);
     return j; // the new pivot in its proper place
 }
 
 void MergeSort(std::string A[], int left, int right, std::string temp[]) {
-    if (left < right) {// this means there is data to sort (left < right)
+    if (left < right) { // this means there is data to sort (left < right)
         int mid = (left + right) / 2; // C++ always does the floor of int div
         MergeSort(A, left, mid, temp);
         MergeSort(A, mid + 1, right, temp);
         merge(A, left, mid, mid + 1, right, temp);
+        return; // I like having explicit calls to return
     }
     else {
         return; // no data
@@ -161,11 +161,11 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
     // each half is already sorted, we are now combining them
     int SaveStart = left;
     int index = left;
-    while (left <= leftend && right <= rightend) {
-        if (A[left] < A[right]) { // left value goes first
+    while (left <= leftend && right <= rightend) { // is this correct? Might should be >= leftend
+        if (A[left].compare(A[right]) < 0) { // left value goes first
             temp[index++] = A[left++]; // copy the value to temp
         }
-        else if (A[left] > A[right]) { // right value goes first
+        else if (A[left].compare(A[right]) > 0) { // right value goes first
             temp[index++] = A[right++]; // copy value to temp
         }
         else { // they are equal
@@ -186,7 +186,7 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
 void PrintArray(std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints out the entire array
     int c; // counter accessible to rest of function
     for (c = 0; c < len/lineWords; c++) { // repeat for every FULL line
-        for (int i = 0; i < lineWords; i++) {
+        for (int i = 0; i < lineWords; i++) { // repeat within the line for each slot
             writeFile << std::setw(FIELD_WIDTH) << std::right<< arr[c*lineWords + i] << ',';
         } // there may still be a few characters in a partial line
     }
@@ -209,11 +209,13 @@ void PrintReverse(std::string arr[], int len, int lineWords, std::ofstream& writ
     return;
 }
 
-void swap(std::string& arg1, std::string& arg2) { // deep copies stuff to keep things simple
-    std::string temp = arg1; // backup arg1 before changing it
-    arg1 = arg2;
-    arg2 = temp;
-}
+/*
+Lists out how to convers relational operators to the compare method
+string1 <  string2: string1.compare(string2) < 0
+string1 == string2: string1.compare(string2) == 0
+string1 >  string2: string1.compart(string2) > 0
+string1 != string2: string1.compare(string2) != 0
+*/
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
