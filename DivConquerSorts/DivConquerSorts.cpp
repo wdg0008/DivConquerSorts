@@ -37,10 +37,6 @@ void MergeSort(std::string[], int, int, std::string[]); // mergesort algorithm w
 
 void merge(std::string[], int, int, int, int, std::string[]); // merge back together all of the values
 
-void swap(std::string&, std::string&); // swaps two elements by deep copy
-
-void CopyString(const std::string&, std::string&); // deep copies string1 to string2
-
 // thus continues the eternal cycle of suffering
 int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
     /* PART I: Get input and output file names */
@@ -140,10 +136,10 @@ int partition(std::string words[], int leftend, int rightend) { // the partition
         while (words[j].compare(p) < 0 || words[i].compare(p) == 0) { // words[i] <= p
             --j; // move j to the left from the right (RTL)
         }
-        swap(words[i], words[j]);
+        std::swap(words[i], words[j]);
     }
-    swap(words[i], words[j]);
-    swap(words[leftend], words[j]);
+    std::swap(words[i], words[j]);
+    std::swap(words[leftend], words[j]);
     return j; // the new pivot in its proper place
 }
 
@@ -211,20 +207,6 @@ void PrintReverse(std::string arr[], int len, int lineWords, std::ofstream& writ
         writeFile << std::setw(FIELD_WIDTH) << std::right << arr[i] << ',';
     } // K.O.
     return;
-}
-
-void swap(std::string& arg1, std::string& arg2) { // deep copies stuff to keep things simple
-    std::string temp; // backup arg1 before changing it
-    CopyString(arg1, temp); // swap out the arrays while preserving data during overwrite
-    CopyString(arg2, arg1);
-    CopyString(temp, arg2);
-}
-
-void CopyString(const std::string& str1, std::string& str2) { // element-wise deep copies of str1 into str2
-    str2 = {}; // empty it out completely
-    for (int i = 0; i < str1.length(); i++) { // repeat for every element in the array
-        str2[i] = str1[i]; // copy every element of the first string into the second one
-    }
 }
 
 /*
