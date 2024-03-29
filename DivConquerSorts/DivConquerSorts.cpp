@@ -25,9 +25,9 @@ const int MAX_LENGTH = 100000; // maximum number of elements in the sorted list;
 const int FIELD_WIDTH = 8; // field width for writing output to file
 
 // declare all the function prototypes
-void PrintArray(std::string[], int, int, std::ofstream&); // prints the entire array
+void PrintArray(const std::string[], int, int, std::ofstream&); // prints the entire array
 
-void PrintReverse(std::string[], int, int, std::ofstream&); // prints the entire array in reverse
+void PrintReverse(const std::string[], int, int, std::ofstream&); // prints the entire array in reverse
 
 void QuickSort(std::string[], int, int); // quicksort algorithm wrapper
 
@@ -36,6 +36,8 @@ int partition(std::string[], int, int); // partitioning for QuickSort
 void MergeSort(std::string[], int, int, std::string[]); // mergesort algorithm wrapper
 
 void merge(std::string[], int, int, int, int, std::string[]); // merge back together all of the values
+
+void TestDump(const std::string[], int, int); // prints entire array of strings to cout
 
 // thus continues the eternal cycle of suffering
 int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
@@ -84,7 +86,7 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
         inFile >> words1[n]; // read in the values
         words2[n] = words1[n]; // create a second copy of the data
     }
-    std::cout << n << "words were found in the file: " << inpath.c_str() << std::endl;
+    std::cout << n << " words were found in the file: " << inpath.c_str() << std::endl;
     std::cout << "How many words per line should be printed? ";
     unsigned int wordsPerLine;
     bool badNum = false; // whether the number of words to print per line makes sense
@@ -96,14 +98,15 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
         }
     } while (badNum);
     std::cout << std::endl << std::endl;
+    TestDump(words1, n, wordsPerLine);
 
     /* PART III: Sort with quicksort */
-    QuickSort(words1, 0, n);
+    QuickSort(words1, 0, n-1);
     /* PART IV: Print results to output file*/
     outFile << n << "words were sorted using quicksort:\n\n";
     PrintArray(words1, n, wordsPerLine, outFile); // print the sorted results to the file
     /* PART V: Sort with mergesort */
-    MergeSort(words2, 0, n, scratch); // mergesort with extra temporary memory
+    MergeSort(words2, 0, n-1, scratch); // mergesort with extra temporary memory
     /* PART VI: Print results in reverse order */
     outFile << n << "words were sorted using mergesort, printed in reverse order:\n\n";
     PrintReverse(words2, n, wordsPerLine, outFile); // print reverse sorted results to file
@@ -122,19 +125,21 @@ void QuickSort(std::string data[], int start, int stop) { // the wrapper functio
         int partitionIndex = partition(data, start, stop); // find the partition
         QuickSort(data, start, partitionIndex - 1);
         QuickSort(data, partitionIndex + 1, stop);
+        TestDump(data, stop - start, 5);
     }
     return; // skips to here on a bad call, arrives here on a good one
 }
 
 int partition(std::string words[], int leftend, int rightend) { // the partitioning does ALL the work
     std::string p = words[leftend]; // the pivot point to start the chaos
-    int i = leftend, j = rightend + 1; // I <3 textbook
-    while (i >= j) {
-        while (words[i].compare(p) > 0 || words[i].compare(p) == 0) { // words[i] >= p
-            ++i; // move i to the right from the left (LTR)
+    int i = leftend; // left-hand iteraror variable
+    int j = rightend + 1; // right-hand iterator variable
+    while (i < j) { // not i >= j, silly programmer :P
+        while (words[i].compare(p) < 0) { // words[i] < p
+            ++i; // move i from the left to the right (LTR)
         }
-        while (words[j].compare(p) < 0 || words[i].compare(p) == 0) { // words[i] <= p
-            --j; // move j to the left from the right (RTL)
+        while (words[j].compare(p) > 0) { // words[i] > p
+            --j; // move j from the right to the left (RTL)
         }
         std::swap(words[i], words[j]);
     }
@@ -162,6 +167,7 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
     int SaveStart = left;
     int index = left;
     while (left <= leftend && right <= rightend) { // is this correct? Might should be >= leftend
+        // TODO: Consider using _stricmp from the Visual Studio libraries as a Windows alternative to strcasecmp
         if (A[left].compare(A[right]) < 0) { // left value goes first
             temp[index++] = A[left++]; // copy the value to temp
         }
@@ -183,7 +189,7 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
     }
 }
 
-void PrintArray(std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints out the entire array
+void PrintArray(const std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints out the entire array
     int c; // counter accessible to rest of function
     for (c = 0; c < len/lineWords; c++) { // repeat for every FULL line
         for (int i = 0; i < lineWords; i++) { // repeat within the line for each slot
@@ -196,7 +202,7 @@ void PrintArray(std::string arr[], int len, int lineWords, std::ofstream& writeF
     return;
 }
 
-void PrintReverse(std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints the entire array in reverse order
+void PrintReverse(const std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints the entire array in reverse order
     int c; // counter accessible to the rest of the function
     for (c = len - 1; len - c*lineWords > 0; c--) { // start on the last line and work down by lines
         for (int i = lineWords - 1; i >= 0; i--) { // repeat for every FULL line
@@ -207,6 +213,16 @@ void PrintReverse(std::string arr[], int len, int lineWords, std::ofstream& writ
         writeFile << std::setw(FIELD_WIDTH) << std::right << arr[i] << ',';
     } // K.O.
     return;
+}
+
+void TestDump(const std::string info[], int len, int lineWords) { // test funciton to tell me what is up
+    std::cout << "\nCurrent state of the array:\n";
+    for (int i = 0; i < len; i++) {
+        std::cout << info[i] << ", ";
+        if (i % lineWords == 0)
+            std::cout << std::endl;
+    }
+    std::cout << "\nEnd of test dump.\n\n";
 }
 
 /*
