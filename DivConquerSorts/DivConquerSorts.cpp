@@ -22,7 +22,7 @@ It asks for certain parameters to specify what file is read and how much to prin
 #include <string>    // pray that this includes relational operators!
 
 const int MAX_LENGTH = 100000; // maximum number of elements in the sorted list;
-const int FIELD_WIDTH = 8; // field width for writing output to file
+const int FIELD_WIDTH = 16; // field width for writing output to file
 
 // declare all the function prototypes
 void PrintArray(const std::string[], int, int, std::ofstream&); // prints the entire array
@@ -103,12 +103,12 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
     /* PART III: Sort with quicksort */
     QuickSort(words1, 0, n-1);
     /* PART IV: Print results to output file*/
-    outFile << n << "words were sorted using quicksort:\n\n";
+    outFile << n << " words were sorted using quicksort:\n\n";
     PrintArray(words1, n, wordsPerLine, outFile); // print the sorted results to the file
     /* PART V: Sort with mergesort */
     MergeSort(words2, 0, n-1, scratch); // mergesort with extra temporary memory
     /* PART VI: Print results in reverse order */
-    outFile << n << "words were sorted using mergesort, printed in reverse order:\n\n";
+    outFile << n <<  "words were sorted using mergesort, printed in reverse order:\n\n";
     PrintReverse(words2, n, wordsPerLine, outFile); // print reverse sorted results to file
     /* PART VII: Clean Up*/
 
@@ -125,27 +125,26 @@ void QuickSort(std::string data[], int start, int stop) { // the wrapper functio
         int partitionIndex = partition(data, start, stop); // find the partition
         QuickSort(data, start, partitionIndex - 1);
         QuickSort(data, partitionIndex + 1, stop);
-        TestDump(data, stop - start, 5);
+        // TestDump(data, stop - start, 5); // TODO: REMOVE BEFORE FLIGHT!!!!!
     }
     return; // skips to here on a bad call, arrives here on a good one
 }
 
 int partition(std::string words[], int leftend, int rightend) { // the partitioning does ALL the work
-    std::string p = words[leftend]; // the pivot point to start the chaos
-    int i = leftend; // left-hand iteraror variable
+    std::string pivot = words[leftend]; // the pivot point to start the chaos
+    int i = leftend - 1; // left-hand iteraror variable
     int j = rightend + 1; // right-hand iterator variable
-    while (i < j) { // not i >= j, silly programmer :P
-        while (words[i].compare(p) < 0) { // words[i] < p
-            ++i; // move i from the left to the right (LTR)
-        }
-        while (words[j].compare(p) > 0) { // words[i] > p
-            --j; // move j from the right to the left (RTL)
-        }
-        std::swap(words[i], words[j]);
+    while (true) { // looks weird, but lets
+        do { // do-whiles ensure that variables are always valid indices
+            i++; // moves i from Left to Right (LTR)
+        } while (words[i].compare(pivot) < 0);
+        do {
+            j--; // moves j from RIght to Left (RTL)
+        } while (words[j].compare(pivot) > 0);
+        if (i >= j) // we got to the middle
+            return j; // all done here
+        std::swap(words[i], words[j]); // swaps like the book, but doesn't have to undo
     }
-    std::swap(words[i], words[j]);
-    std::swap(words[leftend], words[j]);
-    return j; // the new pivot in its proper place
 }
 
 void MergeSort(std::string A[], int left, int right, std::string temp[]) {
@@ -154,11 +153,9 @@ void MergeSort(std::string A[], int left, int right, std::string temp[]) {
         MergeSort(A, left, mid, temp);
         MergeSort(A, mid + 1, right, temp);
         merge(A, left, mid, mid + 1, right, temp);
-        return; // I like having explicit calls to return
+        // TestDump(A, left - right, 5); // TODO: REMOVE BEFORE FLIGHT!!!!!
     }
-    else {
-        return; // no data
-    }
+    return; // explicit calls to return make me happier (not much, but it helps)
 }
 
 void merge(std::string A[], int left, int leftend, int right, int rightend, std::string temp[]) {
@@ -193,26 +190,26 @@ void PrintArray(const std::string arr[], int len, int lineWords, std::ofstream& 
     int c; // counter accessible to rest of function
     for (c = 0; c < len/lineWords; c++) { // repeat for every FULL line
         for (int i = 0; i < lineWords; i++) { // repeat within the line for each slot
-            writeFile << std::setw(FIELD_WIDTH) << std::right<< arr[c*lineWords + i] << ',';
+            writeFile << std::setw(FIELD_WIDTH) << std::right << arr[c*lineWords + i] << ',';
         } // there may still be a few characters in a partial line
+        writeFile << std::endl;
     }
     for (int i = c*lineWords; i < len; i++) { // prints out the last few words that are not a complete line
         writeFile << std::setw(FIELD_WIDTH) << std::right << arr[len - i] << ',';
     } // FINISH HIM!!!
+    writeFile << std::endl;
     return;
 }
 
 void PrintReverse(const std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints the entire array in reverse order
-    int c; // counter accessible to the rest of the function
-    for (c = len - 1; len - c*lineWords > 0; c--) { // start on the last line and work down by lines
-        for (int i = lineWords - 1; i >= 0; i--) { // repeat for every FULL line
-            writeFile << std::setw(FIELD_WIDTH) << std::right << arr[c * lineWords + i] << ',';
-        } // watch out for stragglers in partial lines
+    for (int i = len - 1; i >= 0; i--) { // decrementing counter works back from the beginning of the array
+        writeFile << std::setw(FIELD_WIDTH) << std::right << arr[i] + ','; // prettify and commas
+        if (((len - 1) - i ) % lineWords == lineWords - 1) // check to see if a whole line is completed
+            std::cout << std::endl; // make a new line
     }
-    for (int i = len - c * lineWords; len >= 0; i--) { // prints out the last words that do not fill a line
-        writeFile << std::setw(FIELD_WIDTH) << std::right << arr[i] << ',';
-    } // K.O.
-    return;
+    return; // FINALLY!!!! I CAN GO HOME TO THE REAL WORLD
+    // would have refactored the prior function like this, but it is significantly easier. This one made me think more
+    // ... and, as the old saying goes, "if it ain't broke, don't fix it".
 }
 
 void TestDump(const std::string info[], int len, int lineWords) { // test funciton to tell me what is up
@@ -223,6 +220,7 @@ void TestDump(const std::string info[], int len, int lineWords) { // test funcit
             std::cout << std::endl;
     }
     std::cout << "\nEnd of test dump.\n\n";
+    return;
 }
 
 /*
