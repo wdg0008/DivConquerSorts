@@ -3,8 +3,8 @@
 // Written exclusively by William Goins
 // CS 317-01 at The University of Alabama in Huntsville
 // Begun on 29 February 2024
-// Last updated on 25 March 2024
-// Due 28 March 2024
+// Last updated on 29 March 2024
+// Due 29 March 2024
 
 /* Program Description
 -----------------------
@@ -20,14 +20,14 @@ It asks for certain parameters to specify what file is read and how much to prin
 #include <fstream>   // because files
 #include <exception> // for when things go wrong
 #include <string>    // pray that this includes relational operators!
+#include <locale>    // I need the tolower function!
 
 const int MAX_LENGTH = 100000; // maximum number of elements in the sorted list;
 const int FIELD_WIDTH = 16; // field width for writing output to file
 
-// declare all the function prototypes
 void PrintArray(const std::string[], int, int, std::ofstream&); // prints the entire array
 
-void PrintReverse(const std::string[], int, int, std::ofstream&); // prints the entire array in reverse
+void ReverseArray(std::string[], int, int); // reverse the contents of the array
 
 void QuickSort(std::string[], int, int); // quicksort algorithm wrapper
 
@@ -38,6 +38,8 @@ void MergeSort(std::string[], int, int, std::string[]); // mergesort algorithm w
 void merge(std::string[], int, int, int, int, std::string[]); // merge back together all of the values
 
 void TestDump(const std::string[], int, int); // prints entire array of strings to cout
+
+std::string LowerString(const std::string&); // returns the ASCII lowercase of the argument
 
 // thus continues the eternal cycle of suffering
 int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
@@ -98,7 +100,7 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
         }
     } while (badNum);
     std::cout << std::endl << std::endl;
-    TestDump(words1, n, wordsPerLine);
+    // TestDump(words1, n, wordsPerLine); // TODO: REMOVE BEFORE FLIGHT!!!!!!
 
     /* PART III: Sort with quicksort */
     QuickSort(words1, 0, n-1);
@@ -108,15 +110,16 @@ int main(int argc, char* argv[]) { // SAY THE MAGIC WORDS
     /* PART V: Sort with mergesort */
     MergeSort(words2, 0, n-1, scratch); // mergesort with extra temporary memory
     /* PART VI: Print results in reverse order */
-    outFile << n <<  "words were sorted using mergesort, printed in reverse order:\n\n";
-    PrintReverse(words2, n, wordsPerLine, outFile); // print reverse sorted results to file
+    outFile << n <<  " words were sorted using mergesort, printed in reverse order:\n\n";
+    ReverseArray(words2, 0, n - 1); // reverse the array instead of writing another print :P
+    PrintArray(words2, n, wordsPerLine, outFile); // print reverse sorted results to file
     /* PART VII: Clean Up*/
 
     inFile.close();
     outFile.close();
-    delete [] words1;
-    delete [] words2;
-    delete [] scratch;
+    delete[] words1;
+    delete[] words2;
+    delete[] scratch;
     return 0;
 }
 
@@ -131,10 +134,10 @@ void QuickSort(std::string data[], int start, int stop) { // the wrapper functio
 }
 
 int partition(std::string words[], int leftend, int rightend) { // the partitioning does ALL the work
-    std::string pivot = words[leftend]; // the pivot point to start the chaos
+    std::string pivot = words[(leftend+rightend)/2]; // the pivot point to start the chaos
     int i = leftend - 1; // left-hand iteraror variable
     int j = rightend + 1; // right-hand iterator variable
-    while (true) { // looks weird, but lets
+    while (true) { // looks weird, but lets the return be more elegant
         do { // do-whiles ensure that variables are always valid indices
             i++; // moves i from Left to Right (LTR)
         } while (words[i].compare(pivot) < 0);
@@ -188,28 +191,33 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
 
 void PrintArray(const std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints out the entire array
     int c; // counter accessible to rest of function
-    for (c = 0; c < len/lineWords; c++) { // repeat for every FULL line
+    for (c = 0; c < len / lineWords; c++) { // repeat for every FULL line
         for (int i = 0; i < lineWords; i++) { // repeat within the line for each slot
-            writeFile << std::setw(FIELD_WIDTH) << std::right << arr[c*lineWords + i] << ',';
+            writeFile << std::setw(FIELD_WIDTH) << std::right << arr[c * lineWords + i] << ',';
         } // there may still be a few characters in a partial line
         writeFile << std::endl;
     }
-    for (int i = c*lineWords; i < len; i++) { // prints out the last few words that are not a complete line
+    for (int i = c * lineWords; i < len; i++) { // prints out the last few words that are not a complete line
         writeFile << std::setw(FIELD_WIDTH) << std::right << arr[len - i] << ',';
     } // FINISH HIM!!!
     writeFile << std::endl;
     return;
 }
 
-void PrintReverse(const std::string arr[], int len, int lineWords, std::ofstream& writeFile) { // prints the entire array in reverse order
-    for (int i = len - 1; i >= 0; i--) { // decrementing counter works back from the beginning of the array
-        writeFile << std::setw(FIELD_WIDTH) << std::right << arr[i] + ','; // prettify and commas
-        if (((len - 1) - i ) % lineWords == lineWords - 1) // check to see if a whole line is completed
-            std::cout << std::endl; // make a new line
+void ReverseArray(std::string arr[], int start, int end) { // reorders the array to reverse its elements
+    while (start < end) { // no overlap, but bring them together
+        std::swap(arr[start], arr[end]); // man this function is so useful
+        start++; // creep towards the center
+        end--;
     }
-    return; // FINALLY!!!! I CAN GO HOME TO THE REAL WORLD
-    // would have refactored the prior function like this, but it is significantly easier. This one made me think more
-    // ... and, as the old saying goes, "if it ain't broke, don't fix it".
+}
+
+std::string LowerString(std::string& inputString) {
+    std::string ls = "";
+    for (int i = 0; i < inputString.length(); i++) {
+        ls[i] = tolower(inputString[i]); // make each character in the string lowercase
+    }
+    return ls; // give it back!
 }
 
 void TestDump(const std::string info[], int len, int lineWords) { // test funciton to tell me what is up
@@ -233,7 +241,6 @@ string1 != string2: string1.compare(string2) != 0
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
-
 // Tips for Getting Started: 
 //   1. Use the Solution Explorer window to add/manage files
 //   2. Use the Team Explorer window to connect to source control
