@@ -1,0 +1,28 @@
+51 words were sorted using quicksort:
+
+               a,               a,             and,             Ann,               a,
+              be,              be,             bob,           CAROL,            case,
+            file,          100000,            file,           hello,         goodbye,
+              in,              in,            into,              is,             can,
+              is,            less,             may,            list,         monster,
+           named,              no,            ogre,          puncts,            Once,
+          Sorted,           store,          string,            that,           there,
+           there,           there,            this,            This,            this,
+              to,            time,            type,          should,              up,
+            Upon,             was,              we,            word,           words,
+               a,
+
+51 words were sorted using mergesort, printed in reverse order:
+
+           Words,           words,            word,              we,             was,
+            Upon,              up,            type,              to,            time,
+            this,            this,            This,           there,           there,
+           there,            that,          string,           store,          Sorted,
+          should,          puncts,            Once,            ogre,              no,
+           named,         monster,             may,            list,            less,
+              is,              is,            into,              in,              in,
+           hello,         goodbye,            file,            file,            case,
+           CAROL,             can,             bob,              be,              be,
+             Ann,             and,               a,               a,               a,
+           words,
+
