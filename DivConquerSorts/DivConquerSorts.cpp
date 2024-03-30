@@ -1,6 +1,6 @@
 // DivConquerSorts.cpp : This file contains the 'main' function. Program execution begins and ends there.
 // Program 1: Divide-and-Conquer Sorts
-// Written exclusively by William Goins
+// Written exclusively by William D. Goins V (a.k.a. "Quin")
 // CS 317-01 at The University of Alabama in Huntsville
 // Begun on 29 February 2024
 // Last updated on 29 March 2024
@@ -135,15 +135,17 @@ void QuickSort(std::string data[], int start, int stop) { // the wrapper functio
 
 int partition(std::string words[], int leftend, int rightend) { // the partitioning does ALL the work
     std::string pivot = words[(leftend+rightend)/2]; // the pivot point to start the chaos
+    // the pivot is selected at the middle in case it is already sorted
+    pivot = LowerString(pivot); // comparisons should all be based on lowercase strings
     int i = leftend - 1; // left-hand iteraror variable
     int j = rightend + 1; // right-hand iterator variable
     while (true) { // looks weird, but lets the return be more elegant
         do { // do-whiles ensure that variables are always valid indices
             i++; // moves i from Left to Right (LTR)
-        } while (words[i].compare(pivot) < 0);
+        } while (LowerString(words[i]).compare(pivot) < 0);
         do {
             j--; // moves j from RIght to Left (RTL)
-        } while (words[j].compare(pivot) > 0);
+        } while (LowerString(words[j]).compare(pivot) > 0);
         if (i >= j) // we got to the middle
             return j; // all done here
         std::swap(words[i], words[j]); // swaps like the book, but doesn't have to undo
@@ -167,11 +169,12 @@ void merge(std::string A[], int left, int leftend, int right, int rightend, std:
     int SaveStart = left;
     int index = left;
     while (left <= leftend && right <= rightend) { // is this correct? Might should be >= leftend
-        // TODO: Consider using _stricmp from the Visual Studio libraries as a Windows alternative to strcasecmp
-        if (A[left].compare(A[right]) < 0) { // left value goes first
+        // all comparisons are based on lowercase version of ASCII strings
+        // the LowerString.compare part kind of hurt to write, but the lecture helped a lot.
+        if (LowerString(A[left]).compare(LowerString(A[right])) < 0) { // left value goes first
             temp[index++] = A[left++]; // copy the value to temp
         }
-        else if (A[left].compare(A[right]) > 0) { // right value goes first
+        else if (LowerString(A[left]).compare(LowerString(A[right])) > 0) { // right value goes first
             temp[index++] = A[right++]; // copy value to temp
         }
         else { // they are equal
@@ -200,7 +203,7 @@ void PrintArray(const std::string arr[], int len, int lineWords, std::ofstream& 
     for (int i = c * lineWords; i < len; i++) { // prints out the last few words that are not a complete line
         writeFile << std::setw(FIELD_WIDTH) << std::right << arr[len - i] << ',';
     } // FINISH HIM!!!
-    writeFile << std::endl;
+    writeFile << std::endl << std::endl; // make room for the next best thing
     return;
 }
 
@@ -212,10 +215,11 @@ void ReverseArray(std::string arr[], int start, int end) { // reorders the array
     }
 }
 
-std::string LowerString(std::string& inputString) {
-    std::string ls = "";
-    for (int i = 0; i < inputString.length(); i++) {
-        ls[i] = tolower(inputString[i]); // make each character in the string lowercase
+std::string LowerString(const std::string& inputString) { // takes an ASCII string (for simplicity) and returns a lowercase copy of it
+    std::string ls; // the lowercase string variable to return
+    ls.reserve(inputString.size()); // apparently, this makes it more efficient
+    for (char c : inputString) { // range-based for loop from C++11 iterates over each character
+        ls += std::tolower(c); // now it can directly operate on that character, appending it
     }
     return ls; // give it back!
 }
